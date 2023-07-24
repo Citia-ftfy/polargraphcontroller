@@ -27,9 +27,9 @@
   https://github.com/euphy/polargraphcontroller
 */
 static final String CMD_CHANGELENGTH = "C01,";
-static final String CMD_SETPENWIDTH = "C02,";
-//static final String CMD_CHANGEMOTORSPEED = "C03,";
-//static final String CMD_CHANGEMOTORACCEL = "C04,";
+static final String CMD_CHANGEPENWIDTH = "C02,";
+static final String CMD_CHANGEMOTORSPEED = "C03,";
+static final String CMD_CHANGEMOTORACCEL = "C04,";
 static final String CMD_DRAWPIXEL = "C05,";
 static final String CMD_DRAWSCRIBBLEPIXEL = "C06,";
 static final String CMD_DRAWRECT = "C07,";
@@ -120,7 +120,9 @@ void sendRequestMachineSize()
 void sendMachineSpec()
 {
   // ask for input to get the new machine size
-  String command = CMD_CHANGEMACHINESIZE+getDisplayMachine().inMM(getDisplayMachine().getWidth())+","+getDisplayMachine().inMM(getDisplayMachine().getHeight())+",END";
+  String command = CMD_CHANGEMACHINENAME+newMachineName+",END";
+  addToCommandQueue(command);
+  command = CMD_CHANGEMACHINESIZE+getDisplayMachine().inMM(getDisplayMachine().getWidth())+","+getDisplayMachine().inMM(getDisplayMachine().getHeight())+",END";
   addToCommandQueue(command);
   command = CMD_CHANGEMACHINEMMPERREV+int(getDisplayMachine().getMMPerRev())+",END";
   addToCommandQueue(command);
@@ -230,7 +232,7 @@ void sendStartTextAtPoint()
 void sendSetHomePosition()
 {
   PVector pgCoords = getDisplayMachine().asNativeCoords(getHomePoint());
-
+  println(pgCoords);
   String command = CMD_SETPOSITION+int(pgCoords.x+0.5)+","+int(pgCoords.y+0.5)+",END";
   addToCommandQueue(command);
 }
@@ -912,12 +914,12 @@ List<PVector> filterPointsLowPass(RPoint[] points, long filterParam, float scali
     {
       p = scaled.get(j);
       // and even then, only bother drawing if it's a move of over "x" steps
-      int diffx = abs(int(p.x) - int(result.get(result.size()-1).x));
-      int diffy = abs(int(p.y) - int(result.get(result.size()-1).y));
+      int diffx = int(p.x) - int(result.get(result.size()-1).x);
+      int diffy = int(p.y) - int(result.get(result.size()-1).y);
 
-      if (diffx > filterParam || diffy > filterParam)
+      if (abs(diffx) > filterParam || abs(diffy) > filterParam)
       {
-        println(j + ". Adding point " + p + " because diffx (" + diffx + ") or diffy (" + diffy + ") is > " + filterParam + ", last: " + result.get(result.size()-1));
+        println(j + ". Adding point " + p + ", last: " + result.get(result.size()-1));
         result.add(p);
       }
     }
@@ -968,3 +970,5 @@ void sendDrawRandomSprite(String spriteFilename)
 {
   addToCommandQueue(CMD_DRAW_RANDOM_SPRITE+","+spriteFilename+",100,500,END");
 }
+
+

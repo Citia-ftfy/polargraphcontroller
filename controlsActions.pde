@@ -323,7 +323,6 @@ void button_mode_loadImage()
     getDisplayMachine().setImageFilename(null);
   }
 }
-
 void button_mode_loadVectorFile()
 {
   if (getVectorShape() == null)
@@ -337,7 +336,6 @@ void button_mode_loadVectorFile()
     vectorFilename = null;
   }
 }
-
 void numberbox_mode_pixelBrightThreshold(float value)
 {
   pixelExtractBrightThreshold = (int) value;
@@ -533,14 +531,12 @@ void numberbox_mode_changeMachineWidth(float value)
   clearBoxVectors();
   float steps = getDisplayMachine().inSteps((int) value);
   getDisplayMachine().getSize().x = steps;
-  getDisplayMachine().maxLength = null;
 }
 void numberbox_mode_changeMachineHeight(float value)
 {
   clearBoxVectors();
   float steps = getDisplayMachine().inSteps((int) value);
   getDisplayMachine().getSize().y = steps;
-  getDisplayMachine().maxLength = null;
 }
 void numberbox_mode_changeMMPerRev(float value)
 {
@@ -617,7 +613,7 @@ void button_mode_sendPenWidth()
   NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
   DecimalFormat df = (DecimalFormat)nf;  
   df.applyPattern("###.##");
-  addToRealtimeCommandQueue(CMD_SETPENWIDTH+df.format(currentPenWidth)+",END");
+  addToRealtimeCommandQueue(CMD_CHANGEPENWIDTH+df.format(currentPenWidth)+",END");
 }  
 
 void numberbox_mode_changePenTestStartWidth(float value)
@@ -734,11 +730,17 @@ void numberbox_mode_previewCordOffsetValue(int value)
   previewQueue(true);
 }
 
-void dropdown_mode_cycleDensityPreviewStyle(int index) 
+void button_mode_cycleDensityPreviewStyle() 
 {
-  println("In dropdown_mode_cycleDensityPreviewStyle");
-  densityPreviewStyle = index;
-  println("Style: " + densityPreviewStyle);
+  Controller c = cp5.getController(MODE_CYCLE_DENSITY_PREVIEW_STYLE);
+  c.setLabel(this.controlLabels.get(MODE_CYCLE_DENSITY_PREVIEW_STYLE) + ": " + densityPreviewStyle);
+  
+  if (densityPreviewStyle == DENSITY_PREVIEW_STYLE_COUNT) {
+    densityPreviewStyle = 0;
+  }
+  else {
+    densityPreviewStyle++;
+  }
 }
 
 void numberbox_mode_changeDensityPreviewPosterize(int value) {
@@ -758,22 +760,20 @@ void numberbox_mode_changePolygonizerLength(float value) {
   setupPolygonizer();
 }
 
-void numberbox_mode_changePolygonizerAdaptativeAngle(float value) {
-  println("numberbox_mode_changePolygonizerAdaptativeAngle");
-  polygonizerAdaptativeAngle = value;
-  setupPolygonizer();
-}
 
-void dropdown_mode_changePolygonizer(int value) 
+void button_mode_cyclePolygonizer() 
 {
-  polygonizer = value;
+  
+  // this is a bit silly for only two choices
+  if (polygonizer == 1) {
+    polygonizer = 0;
+  }
+  else {
+    polygonizer++;
+  }
   setupPolygonizer();
-}
-
-void dropdown_mode_changeMaskInvert(int value)
-{
-  invertMaskMode = value;
-  rebuildPixels();
+  Controller c = cp5.getController(MODE_CHANGE_POLYGONIZER);
+  c.setLabel(this.controlLabels.get(MODE_CHANGE_POLYGONIZER) + ": " + polygonizer);
 }
 
 

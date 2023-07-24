@@ -83,14 +83,6 @@ Set<String> getControlsToLockIfImageNotLoaded() {
   return this.controlsToLockIfImageNotLoaded;
 }
 
-Set<String> getControlsToLockIfVectorNotLoaded() {
-  if (this.controlsToLockIfVectorNotLoaded == null)
-  {
-    this.controlsToLockIfVectorNotLoaded = buildControlsToLockIfVectorNotLoaded();
-  }
-  return this.controlsToLockIfVectorNotLoaded;
-}
-
 void hideAllControls() {
   for (String key : allControls.keySet())
   {
@@ -235,36 +227,8 @@ Set<String> buildControlsToLockIfImageNotLoaded()
   result.add(MODE_CHANGE_SAMPLE_AREA);
   result.add(MODE_SELECT_PICTUREFRAME);
 
-  result.add(MODE_CHANGE_PIXEL_SCALING);
-  result.add(MODE_CHOOSE_CHROMA_KEY_COLOUR);
-
   return result;
 }
-
-Set<String> buildControlsToLockIfVectorNotLoaded()
-{
-  Set<String> result = new HashSet<String>();
-  result.add(MODE_CHANGE_MIN_VECTOR_LINE_LENGTH);
-  result.add(MODE_RESIZE_VECTOR);
-  result.add(MODE_MOVE_VECTOR);
-  result.add(MODE_CHANGE_POLYGONIZER_LENGTH);
-  result.add(MODE_CHANGE_POLYGONIZER);
-
-  return result;
-}
-
-CallbackListener toFront = new CallbackListener() {
-  public void controlEvent(CallbackEvent theEvent) {
-      theEvent.getController().bringToFront();
-      ((ScrollableList)theEvent.getController()).open();
-  }
-};
-
-CallbackListener close = new CallbackListener() {
-  public void controlEvent(CallbackEvent theEvent) {
-      ((ScrollableList)theEvent.getController()).close();
-  }
-};
 
 Map<String, Controller> buildAllControls()
 {
@@ -280,8 +244,6 @@ Map<String, Controller> buildAllControls()
       Button b = cp5.addButton(controlName, 0, 100, 100, 100, 100);
       b.setLabel(getControlLabels().get(controlName));
       b.hide();
-      controlP5.Label l = b.getCaptionLabel();
-      l.align(ControlP5.LEFT, CENTER);
       map.put(controlName, b);
       //      println("Added button " + controlName);
     }
@@ -291,8 +253,8 @@ Map<String, Controller> buildAllControls()
       t.setLabel(getControlLabels().get(controlName));
       t.hide();
       controlP5.Label l = t.getCaptionLabel();
-      l.align(ControlP5.LEFT, CENTER);
-      l.getStyle().setPaddingLeft(4);
+      l.getStyle().marginTop = -17; //move upwards (relative to button size)
+      l.getStyle().marginLeft = 4; //move to the right
       map.put(controlName, t);
       //      println("Added toggle " + controlName);
     }
@@ -302,8 +264,8 @@ Map<String, Controller> buildAllControls()
       t.setLabel(getControlLabels().get(controlName));
       t.hide();
       controlP5.Label l = t.getCaptionLabel();
-      l.align(ControlP5.LEFT, CENTER);
-      l.getStyle().setPaddingLeft(4);
+      l.getStyle().marginTop = -17; //move upwards (relative to button size)
+      l.getStyle().marginLeft = 4; //move to the right
       map.put(controlName, t);
       //      println("Added minitoggle " + controlName);
     }
@@ -314,36 +276,18 @@ Map<String, Controller> buildAllControls()
       n.hide();
       n.setDecimalPrecision(0);
       controlP5.Label l = n.getCaptionLabel();
-      l.align(ControlP5.LEFT, CENTER);
-      l.getStyle().setPaddingLeft(35);
+      l.getStyle().marginTop = -17; //move upwards (relative to button size)
+      l.getStyle().marginLeft = 40; //move to the right
       // change the control direction to left/right
       n.setDirection(Controller.VERTICAL);
       map.put(controlName, n);
       //      println("Added numberbox " + controlName);
-    }
-    else if (controlName.startsWith("dropdown_"))
-    {
-      ScrollableList sl = cp5.addScrollableList(controlName, 100, 100, 100, 100);
-      sl.setBarHeight(20);
-      sl.setItemHeight(20);
-      sl.setLabel(getControlLabels().get(controlName));
-      sl.setType(ScrollableList.DROPDOWN);
-      sl.onEnter(toFront);
-      sl.onLeave(close);
-      sl.setHeight(100);
-      sl.hide();
-      
-      controlP5.Label l = sl.getCaptionLabel();
-      map.put(controlName, sl);
-      println("Added dropdown " + controlName);
     }
   }
 
   initialiseButtonValues(map);
   initialiseToggleValues(map);
   initialiseNumberboxValues(map);
-  initialiseDropdownContents(map);
-  initialiseDropdownValues(map);
   return map;
 }
 
@@ -354,7 +298,12 @@ Map<String, Controller> initialiseButtonValues(Map<String, Controller> map)
     if (key.startsWith("button_"))
     {
       Button n = (Button) map.get(key);
-      if (MODE_CHANGE_POLYGONIZER.equals(key)) {
+
+      if (MODE_CYCLE_DENSITY_PREVIEW_STYLE.equals(key)) {
+        n.setValue(densityPreviewStyle);
+        n.setLabel(this.controlLabels.get(MODE_CYCLE_DENSITY_PREVIEW_STYLE) + ": " + densityPreviewStyle);              
+      }
+      else if (MODE_CHANGE_POLYGONIZER.equals(key)) {
         n.setValue(polygonizer);
         n.setLabel(this.controlLabels.get(MODE_CHANGE_POLYGONIZER) + ": " + polygonizer);              
       }        
@@ -587,8 +536,8 @@ Map<String, Controller> initialiseNumberboxValues(Map<String, Controller> map)
       }
       else if (MODE_ADJUST_PREVIEW_CORD_OFFSET.equals(key))
       {
-        n.setDecimalPrecision(2);
-        n.setValue(0.0);
+        n.setDecimalPrecision(0);
+        n.setValue(0);
         n.setMultiplier(0.5);
       }
       else if (MODE_CHANGE_DENSITY_PREVIEW_POSTERIZE.equals(key))
@@ -604,13 +553,7 @@ Map<String, Controller> initialiseNumberboxValues(Map<String, Controller> map)
         n.setMin(1.0);
         n.setDecimalPrecision(1);
         n.setMultiplier(0.1);
-      }
-      else if (MODE_CHANGE_POLYGONIZER_ADAPTATIVE_ANGLE.equals(key)) {
-        n.setValue(polygonizerAdaptativeAngle);
-        n.setMin(0.0);
-        n.setMax(1.57079632679);
-        n.setDecimalPrecision(2);
-        n.setMultiplier(0.01);
+
       }
     }
   }
@@ -671,64 +614,6 @@ Map<String, Controller> initialiseToggleValues(Map<String, Controller> map)
   return map;
 }
 
-Map<String, Controller> initialiseDropdownContents(Map<String, Controller> map)
-{
-  println("Init dropdown contents");
-  for (String key : map.keySet())
-  {
-    if (MODE_CYCLE_DENSITY_PREVIEW_STYLE.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setItems(densityPreviewStyles);
-    }
-    if (MODE_CHANGE_POLYGONIZER.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setItems(polygonizerStyles);
-    }
-    if (MODE_CHANGE_INVERT_MASK.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setItems(invertMaskModes);
-    }
-  }
-  return map;
-}
-
-Map<String, Controller> initialiseDropdownValues(Map<String, Controller> map)
-{
-  println("Init dropdown values");
-  for (String key : map.keySet())
-  {
-    if (MODE_CYCLE_DENSITY_PREVIEW_STYLE.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setValue(densityPreviewStyle);
-      sl.close();
-    }
-    else if (MODE_CHANGE_POLYGONIZER.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setValue(polygonizer);
-      sl.close();
-    }
-    else if (MODE_CHANGE_INVERT_MASK.equals(key))
-    {
-      println("Adding " + key);
-      ScrollableList sl = (ScrollableList) map.get(key);
-      sl.setValue(polygonizer);
-      sl.close();
-    }
-  }
-  return map;
-}
-
-
 String getControlLabel(String butName)
 {
   if (controlLabels.containsKey(butName))
@@ -749,18 +634,6 @@ Map<String, PVector> buildControlPositionsForPanel(Panel panel)
     if (controller.getName().startsWith("minitoggle_"))
     {
       PVector p = new PVector(col*(DEFAULT_CONTROL_SIZE.x+CONTROL_SPACING.x), row*(DEFAULT_CONTROL_SIZE.y+CONTROL_SPACING.y));
-      map.put(controller.getName(), p);
-      row++;
-      if (p.y + (DEFAULT_CONTROL_SIZE.y*2) >= panel.getOutline().getHeight())
-      {
-        row = 0;
-        col++;
-      }
-    }
-    else if (controller.getName().startsWith("dropdown_"))
-    {
-      PVector p = new PVector(col*(DEFAULT_CONTROL_SIZE.x+CONTROL_SPACING.x), row*(DEFAULT_CONTROL_SIZE.y+CONTROL_SPACING.y));
-      println(controller);
       map.put(controller.getName(), p);
       row++;
       if (p.y + (DEFAULT_CONTROL_SIZE.y*2) >= panel.getOutline().getHeight())
@@ -796,11 +669,6 @@ Map<String, PVector> buildControlSizesForPanel(Panel panel)
     if (controller.getName().startsWith("minitoggle_"))
     {
       PVector s = new PVector(DEFAULT_CONTROL_SIZE.y, DEFAULT_CONTROL_SIZE.y);
-      map.put(controller.getName(), s);
-    }
-    else if (controller.getName().startsWith("dropdown_"))
-    {
-      PVector s = new PVector(DEFAULT_CONTROL_SIZE.x, DEFAULT_CONTROL_SIZE.y * 4);
       map.put(controller.getName(), s);
     }
     else
@@ -863,8 +731,9 @@ List<String> getControlNamesForInputPanel()
   controlNames.add(MODE_CHANGE_GRID_SIZE);
   controlNames.add(MODE_CHANGE_SAMPLE_AREA);
   controlNames.add(MODE_CHOOSE_CHROMA_KEY_COLOUR);
-  controlNames.add(MODE_CHANGE_INVERT_MASK);
   controlNames.add(MODE_CHANGE_PIXEL_SCALING);
+  controlNames.add(MODE_CHANGE_DENSITY_PREVIEW_POSTERIZE);
+  controlNames.add(MODE_CYCLE_DENSITY_PREVIEW_STYLE);  
 
   controlNames.add(MODE_RENDER_PIXEL_DIALOG);
 //  controlNames.add(MODE_DRAW_GRID);
@@ -875,23 +744,20 @@ List<String> getControlNamesForInputPanel()
   controlNames.add(MODE_LOAD_VECTOR_FILE);
   controlNames.add(MODE_RESIZE_VECTOR);
   controlNames.add(MODE_MOVE_VECTOR);
-  controlNames.add(MODE_ADJUST_PREVIEW_CORD_OFFSET);
-
-  controlNames.add(MODE_RENDER_VECTORS);
   controlNames.add(MODE_CHANGE_MIN_VECTOR_LINE_LENGTH);
+  //controlNames.add(MODE_VECTOR_PATH_LENGTH_HIGHPASS_CUTOFF);
+  controlNames.add(MODE_RENDER_VECTORS);
+  
+  controlNames.add(MODE_ADJUST_PREVIEW_CORD_OFFSET);
   controlNames.add(MODE_CHANGE_POLYGONIZER);
   controlNames.add(MODE_CHANGE_POLYGONIZER_LENGTH);
-//  controlNames.add(MODE_CHANGE_POLYGONIZER_ADAPTATIVE_ANGLE);
 
   controlNames.add(MODE_SHOW_IMAGE);
   controlNames.add(MODE_SHOW_VECTOR);
   controlNames.add(MODE_SHOW_QUEUE_PREVIEW);
-  controlNames.add(MODE_SHOW_GUIDES);
-
   controlNames.add(MODE_SHOW_DENSITY_PREVIEW);
+  controlNames.add(MODE_SHOW_GUIDES);
   controlNames.add(MODE_PREVIEW_PIXEL_DENSITY_RANGE);
-  controlNames.add(MODE_CHANGE_DENSITY_PREVIEW_POSTERIZE);
-  controlNames.add(MODE_CYCLE_DENSITY_PREVIEW_STYLE);  
 
   
   return controlNames;
@@ -1119,7 +985,6 @@ Map<String, String> buildControlLabels()
   result.put(MODE_MOVE_VECTOR, "Move vector");
   result.put(MODE_RENDER_PIXEL_DIALOG, "Render pixels...");
   result.put(MODE_CHOOSE_CHROMA_KEY_COLOUR, "Choose mask colour");
-  result.put(MODE_CHANGE_INVERT_MASK, "Mask mode");
   result.put(MODE_CHANGE_PIXEL_SCALING, "Pixel scaling");
   
   result.put(MODE_PEN_LIFT_UP, "Pen lift");
@@ -1160,14 +1025,13 @@ Map<String, String> buildControlLabels()
   result.put(MODE_SEND_BUTTON_DEACTIVATE, "Deactivate button");
   
   result.put(MODE_ADJUST_PREVIEW_CORD_OFFSET, "Cord offset");
-  result.put(MODE_CYCLE_DENSITY_PREVIEW_STYLE, "Density preview style");
+  result.put(MODE_CYCLE_DENSITY_PREVIEW_STYLE, "Cycle preview style");
   
   result.put(MODE_CHANGE_DENSITY_PREVIEW_POSTERIZE, "Pixel posterize");
   result.put(MODE_PREVIEW_PIXEL_DENSITY_RANGE, "Show density range");
   
-  result.put(MODE_CHANGE_POLYGONIZER, "Polygonizer style");
+  result.put(MODE_CHANGE_POLYGONIZER, "Cycle polygonizer");
   result.put(MODE_CHANGE_POLYGONIZER_LENGTH, "Polygonizer length");
-  result.put(MODE_CHANGE_POLYGONIZER_ADAPTATIVE_ANGLE, "Polygonizer angle");
   
 
   return result;
@@ -1275,7 +1139,6 @@ Set<String> buildControlNames()
   result.add(MODE_CHANGE_MIN_VECTOR_LINE_LENGTH);
   
   result.add(MODE_CHOOSE_CHROMA_KEY_COLOUR);
-  result.add(MODE_CHANGE_INVERT_MASK);
   result.add(MODE_CHANGE_PIXEL_SCALING);
   result.add(MODE_PEN_LIFT_UP);
   result.add(MODE_PEN_LIFT_DOWN);
@@ -1321,7 +1184,6 @@ Set<String> buildControlNames()
   
   result.add(MODE_CHANGE_POLYGONIZER_LENGTH);
   result.add(MODE_CHANGE_POLYGONIZER);
-  result.add(MODE_CHANGE_POLYGONIZER_ADAPTATIVE_ANGLE);
   
   return result;
 }

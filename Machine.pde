@@ -186,15 +186,9 @@ class Machine
     return mmInt;
   }
   
-  public float inMMFloat(float steps) 
-  {
-    double mm = steps / getStepsPerMM();
-    return (float) mm;
-  }
-  
   public PVector inMM (PVector steps)
   {
-    PVector mm = new PVector(inMMFloat(steps.x), inMMFloat(steps.y));
+    PVector mm = new PVector(inMM(steps.x), inMM(steps.y));
     return mm;
   }
   
@@ -292,16 +286,6 @@ class Machine
     }
   }
 
-  boolean isMasked(PVector pos, float scalingFactor)
-  {
-    switch (invertMaskMode) {
-      case MASK_IS_UNUSED:  return false;
-      case MASKED_COLOURS_ARE_HIDDEN:  return isChromaKey(pos, scalingFactor);
-      case MASKED_COLOURS_ARE_SHOWN:  return !isChromaKey(pos, scalingFactor);
-      default:  return false;
-    }
-  }
-
   boolean isChromaKey(PVector pos, float scalingFactor)
   {
     if (getImageFrame().surrounds(pos))
@@ -338,8 +322,8 @@ class Machine
   
   public PVector asCartesianCoords(PVector pgCoords)
   {
-    float calcX = (pow(getWidth(), 2.0) - pow(pgCoords.y, 2.0) + pow(pgCoords.x, 2.0)) / (getWidth()*2.0);
-    float calcY = sqrt(pow(pgCoords.x,2.0)-pow(calcX,2.0));
+    float calcX = int((pow(getWidth(), 2) - pow(pgCoords.y, 2) + pow(pgCoords.x, 2)) / (getWidth()*2));
+    float calcY = int(sqrt(pow(pgCoords.x,2)-pow(calcX,2)));
     PVector vect = new PVector(calcX, calcY);
     return vect;
   }
@@ -636,7 +620,7 @@ class Machine
         PVector cartesianCoord = asCartesianCoords(nativeCoord);
         if (selectedArea.surrounds(cartesianCoord))
         {
-          if (isMasked(cartesianCoord, scalingFactor))
+          if (isChromaKey(cartesianCoord, scalingFactor))
           {
             nativeCoord.z = MASKED_PIXEL_BRIGHTNESS; // magic number
             nativeCoords.add(nativeCoord);

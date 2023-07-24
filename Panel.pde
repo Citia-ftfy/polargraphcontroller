@@ -133,6 +133,7 @@ class Panel
   {
     for (Controller c : this.getControls())
     {
+//      println("Control: " + c.getName());
       PVector pos = getControlPositions().get(c.getName());
       float x = pos.x+getOutline().getLeft();
       float y = pos.y+getOutline().getTop();
@@ -164,13 +165,6 @@ class Panel
       {
         locked = true;        
       }
-
-      // if there's no vector loaded, then hide vector controls
-      if (getControlsToLockIfVectorNotLoaded().contains(c.getName()) && vectorFilename == null)
-      {
-        locked = true;        
-      }
-
       
       if (c.getName().equals(MODE_LOAD_VECTOR_FILE))
       {
@@ -217,7 +211,6 @@ class Panel
         this.getOutline().setHeight(getMinimumHeight());
       else
         this.getOutline().setHeight(h);
-        
       setControlPositions(buildControlPositionsForPanel(this));
       
       float left = 0.0;
