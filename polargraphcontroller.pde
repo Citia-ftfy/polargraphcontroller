@@ -598,7 +598,7 @@ void setup()
         portName = serialPorts[getSerialPortNumber()];
         myPort = new Serial(this, portName, getBaudRate());
         
-        portName2 = "COM27"; //DONT HARDCODE THIS MAYBE
+        portName2 = "/dev/ttyS11"; //DONT HARDCODE THIS MAYBE
         myPort2 = new Serial(this, portName2, baudRate2);
         
         //read bytes into a buffer until you get a linefeed (ASCII 10):
@@ -2991,6 +2991,7 @@ void dispatchCommandQueue()
 //    crc.update(lastCommand.getBytes(), 0, lastCommand.length());
 //    lastCommand = lastCommand+":"+crc.getValue();
     println("Last command:" + lastCommand);
+    myPort2.write("RESET");
     myPort.write(lastCommand);
     myPort.write(10); // OH *$%! of COURSE you should terminate it.
     drawbotReady = false;
